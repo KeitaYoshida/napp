@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    // "target": "esnext", // define to your liking
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@page/*": ["src/pages/*"],
+      "@com/*": ["src/components/*"],
+    }
+  },
+  "exclude": ["node_modules"] // Optional
+}

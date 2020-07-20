@@ -1,11 +1,33 @@
+const path = require('path')
+
 module.exports = {
   siteMetadata: {
-    title: `Gatsby Default Starter`,
+    title: `napp`,
     description: `Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.`,
     author: `@gatsbyjs`,
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
+    {
+      resolve: `gatsby-plugin-styled-components`,
+      options: {
+        // Add any options here
+      },
+    },
+    {
+      resolve: `gatsby-plugin-typography`,
+      options: {
+        pathToConfigModule: `src/utils/typography`,
+      },
+    },
+    {
+      resolve: 'gatsby-plugin-root-import',
+      options: {
+        '@src': path.join(__dirname, 'src'),
+        '@page': path.join(__dirname, 'src/pages'),
+        '@com': path.join(__dirname, 'src/components')
+      }
+    },
     {
       resolve: `gatsby-source-filesystem`,
       options: {

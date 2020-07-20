@@ -1,21 +1,29 @@
 import React from "react"
-import { Link } from "gatsby"
+// import { Link } from "gatsby"
 
-import Layout from "../components/layout"
-import Image from "../components/image"
-import SEO from "../components/seo"
+import Layout from "@com/layout"
+import ViewText from "@com/view-text"
+// import Image from "@com/image"
+import SEO from "@com/seo"
+import styled from 'styled-components'
+
+const TextBox = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right:0;
+  padding: 4rem 3rem;
+  z-index: 10;
+  background-color: #f0f0f0;
+`
 
 const IndexPage = () => (
   <Layout>
     <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
-    </div>
-    <Link to="/page-2/">Go to page 2</Link> <br />
-    <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
+    <TextBox>
+      <ViewText />
+    </TextBox>
   </Layout>
 )
 
