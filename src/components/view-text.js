@@ -18,7 +18,7 @@ const isNumber = function (value) {
   return Number.isFinite(value);
 };
 const Int = (num) => isNumber(num) ? Math.floor(num) : 0;
-const baseText = 'あいうえ'
+const baseText = 'Gatsby Cloud: the best way to build and maintain Gatsby sites'
 const zero = (val) => ('00' + val).slice(-2);
 
 /* 
@@ -44,7 +44,8 @@ const Char = styled.span`
   /* box-sizing: content-box;  */
   /* border: 1px solid #ccc; */
 `
-const Str = styled.span`
+/* animation-delay: ${props => props.delay}s; */
+const Str = styled.span.attrs(props => ({ style: { animationDelay: props.delay + 's' } }))`
   position:absolute;
   top: 0;
   left: 0;
@@ -53,7 +54,6 @@ const Str = styled.span`
   &.fadein {
     opacity: 0;
     animation: fadein ${props => props.speed}s ease forwards;
-    animation-delay: ${props => props.delay}s;
   }
   @keyframes fadein {
       100% {  opacity: 1;}
@@ -68,19 +68,28 @@ const ViewText = () => {
   const [text, setText] = useState({})
   const setId = (rowIndex, cols, colIndex) => {
     const colRev = (cols.length - 1) - colIndex
-    return zero(colRev) + '-' + zero(rowIndex);
+    return zero(rowIndex) + '-' + zero(colRev);
+  }
+  const setDelay = (rows, rowIndex, cols, colIndex) => {
+    const colRev = (cols.length - 1) - colIndex
+    return (rows * colRev) + rowIndex;
   }
   const optimizeText = ({ height, width }) => {
-    console.log(Rows(height))
-    console.log(Cols(width))
-    const maxRow = Rows[height]
-    const maxCol = Cols[width]
+    const maxRow = Rows(height)
+    const maxCol = Cols(width)
     let [row, col] = [0, 0]
     const text = {}
-    Array.from(baseText).map(char => {
+    Array.from(baseText).map((char) => {
       text[`${zero(row)}-${zero(col)}`] = char;
+      row += 1;
+      if (row === maxRow) {
+        console.log(row, maxRow)
+        row = 0;
+        col += 1;
+      }
       return 0;
     })
+    console.log(text)
     return text;
   }
 
@@ -118,8 +127,8 @@ const ViewText = () => {
                     <Str
                       className="fadein"
                       id={setId(rowIndex, c, colIndex)}
-                      delay={rowIndex * 0.2}
-                      speed={2}
+                      delay={setDelay(Rows(size.height), rowIndex, c, colIndex) * 0.05}
+                      speed={1}
                     >
                       {text[setId(rowIndex, c, colIndex)]}
                     </Str>
