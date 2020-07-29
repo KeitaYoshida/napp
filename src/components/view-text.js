@@ -7,94 +7,104 @@
 # サイズの変更が可能
 */
 import React, { useState, useEffect, useRef } from 'react'
-
 import styled from 'styled-components'
 // import ViewTextRow from './view-text-row'
 
 const baseText = 'Gatsby Cloud: the best way to build and maintain Gatsby sites'
+const base = {
+  speed: 1,
+  delay: 0.05,
+}
 const Rows = (height) => int(height / BaseHeight);
 const Cols = (width) => int(width / BaseWidth);
 const int = (num) => Number.isFinite(num) ? Math.floor(num) : 0;
 const zero = (val) => ('00' + val).slice(-2);
 const toArray = (num) => [...Array(num).keys()]
 const reverse = (num, len) => (len - 1) - num;
+const setData = (maxRow, maxCol) => {
+  const text = {}
+  let [row, col, count] = [0, 0, 0]
+  Array.from(baseText).map((char) => {
+    text[`${zero(row)}-${zero(col)}`] = { ...base, value: char, count: count };
+    if (count === 10) text[`${zero(row)}-${zero(col)}`].thema = 'thema-white'
+    if (count === 10) text[`${zero(row)}-${zero(col)}`].color = 'red'
+    if (count === 20) text[`${zero(row)}-${zero(col)}`].thema = 'thema-black'
+    if (count === 20) text[`${zero(row)}-${zero(col)}`].color = 'blue'
+    row += 1;
+    count += 1;
+    if (row >= maxRow) {
+      row = 0;
+      col += 1;
+    }
+    return 0;
+  })
+  return text;
+}
 
 const ViewText = () => {
   const textRef = useRef(null);
   const resetCell = (tar) => {
     if (!tar) return undefined
     const { offsetWidth: width, offsetHeight: height } = tar;
-    return { row: Rows(height), col: Cols(width) }
+    const row = Rows(height)
+    const col = Cols(width)
+    const text = setData(row, col)
+    console.log(row, { row: row, col: col, text: text });
+    return { row: row, col: col, text: text };
   }
-  const optimizeText = () => {
-    if (!cell) return {}
-    let [row, col] = [0, 0]
-    const text = {}
-    Array.from(baseText).map((char) => {
-      text[`${zero(row)}-${zero(col)}`] = char;
-      row += 1;
-      if (row === cell.row) {
-        console.log(row, cell.row)
-        row = 0;
-        col += 1;
-      }
-      return 0;
-    })
-    console.log(text)
-    return text;
-  }
+  const [thema, setThema] = useState('thema-black')
   const [cell, setCell] = useState(resetCell(textRef.current))
-  const [text, setText] = useState(optimizeText())
-  const setId = (rowIndex, cols, colIndex) => {
-    const colRev = (cols.length - 1) - colIndex
-    return zero(rowIndex) + '-' + zero(colRev);
-  }
-  const setDelay = (rows, rowIndex, cols, colIndex) => {
-    const reverseColNum = reverse(colIndex, cols.length)
-    return (rows * reverseColNum) + rowIndex;
-  }
+  const setId = (rowIndex, cols, colIndex) => zero(rowIndex) + '-' + zero(reverse(colIndex, cols))
 
   useEffect(() => {
     const resize = () => {
       setCell(resetCell(textRef.current))
-      setText(optimizeText())
     }
-    if (!cell) {
-      console.log('no')
-      resize()
+    if (!cell) resize()
+    if (cell) {
+      if (!cell.text) return;
+      Object.keys(cell.text).map(str => {
+        const tar = cell.text[str];;
+        if (tar.thema) {
+          const time = ((tar.count * tar.delay)) * 1000;
+          setTimeout(() => setThema(tar.thema), time)
+        }
+        return false;
+      })
     }
 
     window.addEventListener('resize', resize)
-    return _ => {
-      window.removeEventListener('resize', resize)
-    }
-  })
+    return _ => window.removeEventListener('resize', resize)
+  }, [cell])
   return (
-    <Main ref={textRef}>
-      <View>
-        {cell && toArray(cell.row).map((row, rowIndex) => {
-          return (
+    <Bg className={thema}>
+      <Main ref={textRef}>
+        <View>
+          {cell && toArray(cell.row).map((row, rIndex) => (
             <Tr key={row} >
-              {toArray(cell.col).map((col, colIndex, c) => {
+              {toArray(cell.col).map((col, cIndex) => {
+                const tar = cell.text[setId(rIndex, cell.col, cIndex)];
                 return (
                   <Char key={col} >
-                    <Str
-                      className="fadein"
-                      id={setId(rowIndex, c, colIndex)}
-                      delay={setDelay(cell.height, rowIndex, c, colIndex) * 0.05}
-                      speed={1}
-                    >
-                      {text[setId(rowIndex, c, colIndex)]}
-                    </Str>
+                    {tar &&
+                      <Str
+                        className="fadein"
+                        color={tar.color}
+                        delay={tar.count * tar.delay}
+                        speed={tar.speed}
+                      >
+                        {tar.value}
+                      </Str>
+                    }
                   </Char>
                 )
-              })}
+              }
+              )}
             </Tr>
-          )
-        })
-        }
-      </View>
-    </Main>
+          ))}
+        </View>
+      </Main >
+    </Bg>
   )
 }
 
@@ -103,17 +113,32 @@ export default ViewText;
 const BaseWidth = 36;
 const BaseHeight = 20;
 const FontSize = 16;
+const Bg = styled.div`
+  width: 100%;
+  height: 100%;
+  padding: 4rem 3rem;
+  background-color: white;
+  color: black;
+  transition-property: background-color, color;
+  transition-duration: 3s;
+  &.thema-black {
+    background-color: black;
+    color: white;
+  }
+  &.thema-white {
+    background-color: white;
+    color: black;
+  }
+  p, div {margin: 0; padding: 0;}
+`
 const Main = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #dadada;
-  p, div {margin: 0; padding: 0;}
 `
 const View = styled.div`
   margin: 0 auto;
   text-align: center;
 `
-
 const Char = styled.span`
   display: inline-block;
   position:relative;
@@ -122,7 +147,14 @@ const Char = styled.span`
   height: ${BaseHeight + 'px'};
   font-size: ${FontSize + 'px'};
 `
-const Str = styled.span.attrs(props => ({ style: { animationDelay: props.delay + 's' } }))`
+const Str = styled.span.attrs(props => (
+  {
+    style: {
+      animationDelay: props.delay + 's',
+      color: props.color
+    },
+  }
+))`
   position:absolute;
   top: 0;
   left: 0;
