@@ -10,28 +10,18 @@ import React, { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 // import ViewTextRow from './view-text-row'
 
-const baseText = 'Gatsby Cloud: the best way to build and maintain Gatsby sites'
-const base = {
-  speed: 1,
-  delay: 0.05,
-}
 const Rows = (height) => int(height / BaseHeight);
 const Cols = (width) => int(width / BaseWidth);
 const int = (num) => Number.isFinite(num) ? Math.floor(num) : 0;
 const zero = (val) => ('00' + val).slice(-2);
 const toArray = (num) => [...Array(num).keys()]
 const reverse = (num, len) => (len - 1) - num;
-const setData = (maxRow, maxCol) => {
+const setData = (list, maxRow, maxCol) => {
   const text = {}
-  let [row, col, count] = [0, 0, 0]
-  Array.from(baseText).map((char) => {
-    text[`${zero(row)}-${zero(col)}`] = { ...base, value: char, count: count };
-    if (count === 10) text[`${zero(row)}-${zero(col)}`].thema = 'thema-white'
-    if (count === 10) text[`${zero(row)}-${zero(col)}`].color = 'red'
-    if (count === 20) text[`${zero(row)}-${zero(col)}`].thema = 'thema-black'
-    if (count === 20) text[`${zero(row)}-${zero(col)}`].color = 'blue'
+  let [row, col] = [0, 0]
+  list.forEach(textObject => {
+    text[`${zero(row)}-${zero(col)}`] = textObject;
     row += 1;
-    count += 1;
     if (row >= maxRow) {
       row = 0;
       col += 1;
@@ -41,19 +31,18 @@ const setData = (maxRow, maxCol) => {
   return text;
 }
 
-const ViewText = () => {
+const ViewText = ({ textList }) => {
   const textRef = useRef(null);
   const resetCell = (tar) => {
     if (!tar) return undefined
     const { offsetWidth: width, offsetHeight: height } = tar;
     const row = Rows(height)
     const col = Cols(width)
-    const text = setData(row, col)
-    console.log(row, { row: row, col: col, text: text });
+    const text = setData(textList, row, col)
     return { row: row, col: col, text: text };
   }
-  const [thema, setThema] = useState('thema-black')
-  const [cell, setCell] = useState(resetCell(textRef.current))
+  const [thema, setThema] = useState('thema-white')
+  const [cell, setCell] = useState()
   const setId = (rowIndex, cols, colIndex) => zero(rowIndex) + '-' + zero(reverse(colIndex, cols))
 
   useEffect(() => {
@@ -61,12 +50,17 @@ const ViewText = () => {
       setCell(resetCell(textRef.current))
     }
     if (!cell) resize()
-    if (cell) {
+    else {
       if (!cell.text) return;
-      Object.keys(cell.text).map(str => {
-        const tar = cell.text[str];;
+      Object.keys(cell.text).map((str, index) => {
+        if (index === 0) return;
+        const tar = cell.text[str];
+        const next = cell.text[index + 1];
+        if (!next) return;
+        // remake action now
+        console.log(tar, next)
         if (tar.thema) {
-          const time = ((tar.count * tar.delay)) * 1000;
+          const time = (tar.delay) * 1000;
           setTimeout(() => setThema(tar.thema), time)
         }
         return false;
@@ -90,8 +84,10 @@ const ViewText = () => {
                       <Str
                         className="fadein"
                         color={tar.color}
-                        delay={tar.count * tar.delay}
+                        delay={tar.delay}
                         speed={tar.speed}
+                        rotate={tar.rotate}
+                        weight={tar.weight}
                       >
                         {tar.value}
                       </Str>
@@ -151,7 +147,9 @@ const Str = styled.span.attrs(props => (
   {
     style: {
       animationDelay: props.delay + 's',
-      color: props.color
+      color: props.color,
+      fontWeight: props.weight,
+      transform: `rotate(${props.rotate}deg)`
     },
   }
 ))`
